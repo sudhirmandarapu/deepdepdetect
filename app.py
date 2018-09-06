@@ -1,13 +1,12 @@
-import preprocessor
+from preprocessor import Preprocessor
 
-'''
-path = './transcripts/depressed_transcripts/319_TRANSCRIPT.csv'
+preprocessor = Preprocessor('./transcripts')
 
-x = preprocessor.get_all_transcript_features(
-    './transcripts',
-)
+x, y = preprocessor.get_all_transcript_features()
 
 print(x)
-'''
+print(y)
 
-preprocessor.compile_all_transcripts('./transcripts', './liwc_output')
+'''
+preprocessor.compile_all_transcripts('./output/compiled_transcripts')
+'''
