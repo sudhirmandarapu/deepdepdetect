@@ -2,9 +2,6 @@ import numpy as np
 
 
 class Model:
-    def __init__(self):
-        return
-
     @staticmethod
     def min_max_normalized(data):
         col_max = np.max(data, axis=0)
