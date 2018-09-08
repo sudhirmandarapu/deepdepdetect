@@ -22,7 +22,7 @@ class Preprocessor:
         liwc_features = self._build_liwc_feature_dict()
         for file in os.listdir(self.path):
             name, ext = os.path.splitext(file)
-            if ext != '.csv' or name[4:] != 'TRANSCRIPT':
+            if ext != '.csv' or name[4:] != 'TRANSCRIPT' or not name[:3] in expected_dict:
                 continue
             x.append(self._get_features_for_transcript(file, liwc_features))
             y.append(int(expected_dict[name[:3]]))
@@ -39,7 +39,7 @@ class Preprocessor:
         expected_dict = {}
         for file in [
             'dev_split_Depression_AVEC2017.csv',
-            'test_split_Depression_AVEC2017.csv',
+            # 'test_split_Depression_AVEC2017.csv', TODO: Find the test_split details
             'train_split_Depression_AVEC2017.csv'
         ]:
             with open(self.path+'/'+file) as csv_file:

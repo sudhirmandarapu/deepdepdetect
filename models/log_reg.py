@@ -40,8 +40,8 @@ class LogRegModel(Model):
 
         # Other hyper-parameters.
         learning_rate = 0.003
-        batch_size = 5
-        iter_num = 1500
+        batch_size = 30
+        iter_num = 20000
 
         # Define the optimizer, and the goal which is the minimize the loss.
         opt = tf.train.GradientDescentOptimizer(learning_rate)
