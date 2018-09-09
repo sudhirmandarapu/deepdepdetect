@@ -1,6 +1,7 @@
 from preprocessor import Preprocessor
 import numpy as np
 from models.log_reg import LogRegModel
+from models.dnn import DNN
 
 preprocessor = Preprocessor('./transcripts')
 
@@ -17,5 +18,8 @@ train_y = y[train_index]
 test_x = x[test_index]
 test_y = y[test_index]
 
-log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
-log_reg_model.train()
+# log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
+# log_reg_model.train()
+
+dnn = DNN(train_x, train_y, test_x, test_y, 0.003)
+dnn.train()
