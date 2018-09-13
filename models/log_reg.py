@@ -1,6 +1,7 @@
 from models.model import Model
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class LogRegModel(Model):
@@ -13,13 +14,16 @@ class LogRegModel(Model):
 
     def train(self):
         # Normalize the train and test sets.
-        train_x = self.min_max_normalized(self.train_x)
-        test_x = self.min_max_normalized(self.test_x)
+        # train_x = self.min_max_normalized(self.train_x)
+        # test_x = self.min_max_normalized(self.test_x)
 
         # There are some nan due to the fact that the max and min for those features are both 0. In this case, just
         # set the value to 0
-        train_x = np.nan_to_num(train_x)
-        test_x = np.nan_to_num(test_x)
+        # train_x = np.nan_to_num(train_x)
+        # test_x = np.nan_to_num(test_x)
+
+        train_x = self.train_x
+        test_x = self.test_x
 
         # Initialize the weights of the logistic regression.
         W = tf.Variable(tf.random_normal(shape=[train_x.shape[1], 1]))
@@ -39,9 +43,9 @@ class LogRegModel(Model):
         loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=mod, labels=target))
 
         # Other hyper-parameters.
-        learning_rate = 0.003
-        batch_size = 30
-        iter_num = 20000
+        learning_rate = 0.001
+        batch_size = 10
+        iter_num = 10000
 
         # Define the optimizer, and the goal which is the minimize the loss.
         opt = tf.train.GradientDescentOptimizer(learning_rate)
@@ -77,3 +81,10 @@ class LogRegModel(Model):
             if (epoch + 1) % 300 == 0:
                 print('epoch: {:4d} loss: {:5f} train_acc: {:5f} test_acc: {:5f}'.format(epoch + 1, temp_loss,
                                                                                          temp_train_acc, temp_test_acc))
+        plt.plot(train_acc, 'b-', label='train accuracy')
+        plt.plot(test_acc, 'k-', label='test accuracy')
+        plt.xlabel('epoch')
+        plt.ylabel('accuracy')
+        plt.title('Train and Test Accuracy')
+        plt.legend(loc='best')
+        plt.show()
