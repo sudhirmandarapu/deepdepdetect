@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 import os
+from textblob import TextBlob
 
 
 class Preprocessor:
@@ -59,8 +60,9 @@ class Preprocessor:
         """
         name, _ = os.path.splitext(file)
         features = liwc_features[name]
-        avg_res = self._get_average_response_length(file)
-        features.append(avg_res)
+        features.append(self._get_sentiment(name))
+        # avg_res = self._get_average_response_length(file)
+        # features.append(avg_res)
         return features
 
     def _build_liwc_feature_dict(self):
@@ -72,8 +74,16 @@ class Preprocessor:
                 if row[0] == 'Filename':
                     continue
                 name, _ = os.path.splitext(row[0])
-                liwc_dict[name] = row[3:]
+                features = [float(x) / 100 for x in row[3:83]]
+                liwc_dict[name] = features
         return liwc_dict
+
+    @staticmethod
+    def _get_sentiment(name):
+        f = open('./output/compiled_transcripts/'+name+'.txt', 'r')
+        contents = f.read()
+        t = TextBlob(contents)
+        return t.sentiment.polarity
 
     def _get_average_response_length(self, file):
         """
