@@ -19,9 +19,6 @@ class DNN(Model):
     def train(self):
         train_x = self.min_max_normalized(self.train_x)
         test_x = self.min_max_normalized(self.test_x)
-
-        # There are some nan due to the fact that the max and min for those features are both 0. In this case, just
-        # set the value to 0
         train_x = np.nan_to_num(train_x)
         test_x = np.nan_to_num(test_x)
 
@@ -40,7 +37,7 @@ class DNN(Model):
             train_x,
             self.train_y,
             batch_size=5,
-            epochs=40,
+            epochs=30,
             validation_data=(test_x, self.test_y),
             verbose=1
         )
