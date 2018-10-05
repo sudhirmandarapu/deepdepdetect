@@ -36,8 +36,8 @@ class DNN(Model):
         history = model.fit(
             train_x,
             self.train_y,
-            batch_size=5,
-            epochs=30,
+            batch_size=10,
+            epochs=25,
             validation_data=(test_x, self.test_y),
             verbose=1
         )
@@ -50,11 +50,11 @@ class DNN(Model):
 
         epochs = range(1, len(acc) + 1)
 
-        plt.plot(epochs, acc, 'bo', label='Training acc')
-        plt.plot(epochs, val_acc, 'b', label='Validation acc')
+        plt.plot(epochs, acc, 'b', label='train accuracy')
+        plt.plot(epochs, val_acc, '#000000', label='test accuracy')
         plt.title('Training and validation accuracy')
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
+        plt.xlabel('epoch')
+        plt.ylabel('accuracy')
         plt.legend()
 
         plt.show()

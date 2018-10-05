@@ -29,6 +29,7 @@ def get_feature_averages():
         for row in reader:
             split_row = row[0].split(',')
             if split_row[0] == 'Filename':
+                print(split_row[33])
                 continue
             name, _ = os.path.splitext(row[0])
             t_id = name[:3]
@@ -49,7 +50,7 @@ def get_feature_averages():
     d_avg = [round(sum(x)/len(x), 4) for x in d]
     nd_avg = [round(sum(x)/len(x), 4) for x in nd]
 
-    for r in nd[1]:
+    for r in d[33-3]:
         print(r)
 
 
@@ -89,11 +90,11 @@ def get_sentiments():
                 d.append(sentiment)
             else:
                 nd.append(sentiment)
-    for i in nd:
+    for i in d:
         print(i)
 
 
-get_sentiments()
+# get_sentiments()
 
 # get_responses()
-# get_feature_averages()
+get_feature_averages()
