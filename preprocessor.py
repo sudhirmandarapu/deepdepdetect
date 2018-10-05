@@ -80,7 +80,7 @@ class Preprocessor:
 
     @staticmethod
     def _get_sentiment(name):
-        f = open('./output/compiled_transcripts/'+name+'.txt', 'r')
+        f = open('./output/split_transcripts/'+name+'.txt', 'r')
         contents = f.read()
         t = TextBlob(contents)
         return t.sentiment.polarity
@@ -144,3 +144,26 @@ class Preprocessor:
         speaker = first[2]
         content = first[len(first)-1]+' '+' '.join(row[1:])
         return speaker, content
+
+
+class SplitPreprocessor(Preprocessor):
+    def __init__(self, path):
+        Preprocessor.__init__(self, path)
+        self.path = path
+
+    def get_all_transcript_features(self):
+        x = []
+        y = []
+        expected_dict = self._build_expected_dict()
+        liwc_features = self._build_liwc_feature_dict()
+        for file in os.listdir(self.path):
+            name, ext = os.path.splitext(file)
+            if not (ext == '.csv' or ext == '.txt') or name[4:14] != 'TRANSCRIPT' or not name[:3] in expected_dict:
+                continue
+            x.append(self._get_features_for_transcript(file, liwc_features))
+            y.append(int(expected_dict[name[:3]]))
+        return np.array(x, dtype='float32'), np.array(y, dtype='int32')
+
+# p = Preprocessor('./transcripts')
+# x, y = p.get_all_transcript_features()
+# print(x.shape, y.shape)
