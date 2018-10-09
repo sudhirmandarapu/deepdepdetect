@@ -6,6 +6,7 @@ class Transcript:
     def __init__(self, t_id):
         self.id = t_id
         self.rows = []
+        self.features = None
 
     def add_row(self, row):
         assert(type(row) == TranscriptRow)
@@ -30,12 +31,13 @@ def get_transcripts_in_path(path):
 
 def get_transcript(file, t_id):
     transcript = Transcript(t_id)
-    reader = csv.reader(file, delimiter=' ', quotechar='|')
-    for row in reader:
-        if len(row) < 1:
-            continue
-        speaker, content = _extract_transcript_row(row)
-        transcript.add_row(TranscriptRow(speaker, content))
+    with open(file) as csv_file:
+        reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
+        for row in reader:
+            if len(row) < 2:
+                continue
+            speaker, content = _extract_transcript_row(row)
+            transcript.add_row(TranscriptRow(speaker, content))
     return transcript
 
 
