@@ -27,6 +27,8 @@ class DNN(Model):
         model.add(keras.layers.Dense(16, activation='relu'))
         model.add(keras.layers.Dense(1, activation='sigmoid'))
 
+        #model.add(keras.layers.Dense(32, activation='relu'))
+
         model.compile(
             optimizer=tf.train.AdamOptimizer(),
             loss='binary_crossentropy',
@@ -37,7 +39,7 @@ class DNN(Model):
             train_x,
             self.train_y,
             batch_size=10,
-            epochs=25,
+            epochs=50,
             validation_data=(test_x, self.test_y),
             verbose=1
         )

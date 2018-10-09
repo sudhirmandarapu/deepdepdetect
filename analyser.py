@@ -2,6 +2,7 @@ import csv
 import os
 import matplotlib.pyplot as plt
 from preprocessor import Preprocessor
+import numpy as np
 
 
 def build_expected_dict():
@@ -24,12 +25,13 @@ def get_feature_averages():
     d = [None]*80
     nd = [None]*80
     expected_dict = build_expected_dict()
-    with open('./transcripts/liwc_features.csv') as csv_file:
+    titles = None
+    with open('./output/split_transcripts/liwc_features.csv') as csv_file:
         reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
         for row in reader:
             split_row = row[0].split(',')
             if split_row[0] == 'Filename':
-                print(split_row[33])
+                titles = split_row[3:83]
                 continue
             name, _ = os.path.splitext(row[0])
             t_id = name[:3]
@@ -50,8 +52,7 @@ def get_feature_averages():
     d_avg = [round(sum(x)/len(x), 4) for x in d]
     nd_avg = [round(sum(x)/len(x), 4) for x in nd]
 
-    for r in d[33-3]:
-        print(r)
+    return np.array(d), np.array(nd), titles
 
 
 def get_responses():
@@ -70,8 +71,9 @@ def get_responses():
                 d.append(avg)
             else:
                 nd.append(avg)
-    for i in nd:
-        print(i)
+    # for i in nd:
+    #    print(i)
+    return d, nd
 
 
 def get_sentiments():
@@ -94,7 +96,12 @@ def get_sentiments():
         print(i)
 
 
-# get_sentiments()
-
-# get_responses()
-get_feature_averages()
+d, nd, titles = get_feature_averages()
+index = 33
+while index < 50:
+    fig, ax = plt.subplots()
+    ax.boxplot([d[index], nd[index]])
+    ax.set_title("Feature scores for "+titles[index]+" ("+str(index)+")")
+    ax.xticks = ([1, 2], ['depressed', 'non depressed'])
+    index += 1
+plt.show()
