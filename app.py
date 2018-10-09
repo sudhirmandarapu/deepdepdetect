@@ -2,7 +2,7 @@ from preprocessor import Preprocessor
 import transcript
 import numpy as np
 from models.log_reg import LogRegModel
-from models.dnn import CrossDNN
+from models.dnn import DNN
 
 
 transcripts = transcript.get_transcripts_in_path('./transcripts')
@@ -34,7 +34,7 @@ log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
 #  log_reg_model.train()
 
 print(1-sum(test_y)/len(test_y))
-dnn = CrossDNN(train_x, train_y, test_x, test_y, 0.01)
+dnn = DNN(train_x, train_y, test_x, test_y, 0.01)
 model = dnn.train()
 
 exit()

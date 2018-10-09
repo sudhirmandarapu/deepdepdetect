@@ -1,7 +1,6 @@
 from models.model import Model
 import tensorflow as tf
 from tensorflow import keras
-import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -15,10 +14,10 @@ class DNN(Model):
         self.learning_rate = learning_rate
 
     def train(self):
-        #train_x = self.min_max_normalized(self.train_x)
-        #test_x = self.min_max_normalized(self.test_x)
-        #train_x = np.nan_to_num(train_x)
-        #test_x = np.nan_to_num(test_x)
+        #  train_x = self.min_max_normalized(self.train_x)
+        #  test_x = self.min_max_normalized(self.test_x)
+        #  train_x = np.nan_to_num(train_x)
+        #  test_x = np.nan_to_num(test_x)
         train_x = self.train_x
         test_x = self.test_x
         train_y = self.train_y
@@ -26,7 +25,7 @@ class DNN(Model):
 
         model = keras.Sequential()
         model.add(keras.layers.Dense(300, activation='relu'))
-        #model.add(keras.layers.Dense(16, activation='relu'))
+        #  model.add(keras.layers.Dense(16, activation='relu'))
         model.add(keras.layers.Dense(1, activation='sigmoid'))
 
         model.compile(
@@ -39,7 +38,7 @@ class DNN(Model):
             train_x,
             train_y,
             batch_size=10,
-            epochs=50,
+            epochs=200,
             validation_data=(test_x, test_y),
             verbose=1
         )
