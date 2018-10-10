@@ -2,7 +2,7 @@ from preprocessor import Preprocessor
 import transcript
 import numpy as np
 from models.log_reg import LogRegModel
-from models.dnn import DNN
+from models.dnn import DNN, CrossValidationDNN
 
 
 transcripts = transcript.get_transcripts_in_path('./transcripts')
@@ -30,19 +30,11 @@ train_y = y[train_index]
 test_x = x[test_index]
 test_y = y[test_index]
 
-log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
+# log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
 #  log_reg_model.train()
 
-print(1-sum(test_y)/len(test_y))
-dnn = DNN(train_x, train_y, test_x, test_y, 0.01)
+dnn = DNN(train_x, train_y, test_x, test_y, 0.005)
 model = dnn.train()
 
-exit()
-
-print(train_x)
-
-predictions = model.predict(train_x)
-i = 0
-while i < len(train_y):
-    print(train_y[i], round(predictions[i][0]*100))
-    i += 1
+# cv_dnn = CrossValidationDNN(train_x, train_y, test_x, test_y, 0.005, 5)
+# cv_dnn.train_with_cross_validation()
