@@ -1,9 +1,6 @@
 from models.model import Model
-
 import tensorflow as tf
 from tensorflow import keras
-
-import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -17,17 +14,19 @@ class DNN(Model):
         self.learning_rate = learning_rate
 
     def train(self):
-        train_x = self.min_max_normalized(self.train_x)
-        test_x = self.min_max_normalized(self.test_x)
-        train_x = np.nan_to_num(train_x)
-        test_x = np.nan_to_num(test_x)
+        #  train_x = self.min_max_normalized(self.train_x)
+        #  test_x = self.min_max_normalized(self.test_x)
+        #  train_x = np.nan_to_num(train_x)
+        #  test_x = np.nan_to_num(test_x)
+        train_x = self.train_x
+        test_x = self.test_x
+        train_y = self.train_y
+        test_y = self.test_y
 
         model = keras.Sequential()
-        model.add(keras.layers.Dense(32, activation='relu'))
-        model.add(keras.layers.Dense(16, activation='relu'))
+        model.add(keras.layers.Dense(300, activation='relu'))
+        #  model.add(keras.layers.Dense(16, activation='relu'))
         model.add(keras.layers.Dense(1, activation='sigmoid'))
-
-        #model.add(keras.layers.Dense(32, activation='relu'))
 
         model.compile(
             optimizer=tf.train.AdamOptimizer(),
@@ -37,10 +36,10 @@ class DNN(Model):
 
         history = model.fit(
             train_x,
-            self.train_y,
+            train_y,
             batch_size=10,
-            epochs=50,
-            validation_data=(test_x, self.test_y),
+            epochs=200,
+            validation_data=(test_x, test_y),
             verbose=1
         )
 

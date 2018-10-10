@@ -1,16 +1,23 @@
-from preprocessor import Preprocessor, SplitPreprocessor
+from preprocessor import Preprocessor
+import transcript
 import numpy as np
 from models.log_reg import LogRegModel
 from models.dnn import DNN
-from models.low_dnn import LowDNN
-import sys
-
-preprocessor = Preprocessor('./transcripts')
-
-splitPreprocessor = SplitPreprocessor('./output/split_transcripts')
 
 
-x, y = splitPreprocessor.get_all_transcript_features()
+transcripts = transcript.get_transcripts_in_path('./transcripts')
+p = Preprocessor('./transcripts', transcripts)
+x, y = p.get_all_transcript_features({
+    "liwc_indexes": list(range(80)),
+    "sentiment": True
+})
+
+# up sampling
+i_nd = np.where(y == 0)[0]
+i_d = np.where(y == 1)[0]
+i_d_upsampled = np.random.choice(i_d, size=len(i_nd), replace=True)
+y = np.concatenate((y[i_d_upsampled], y[i_nd]))
+x = np.concatenate((x[i_d_upsampled], x[i_nd]))
 
 seed = 5
 np.random.seed(seed)
@@ -23,33 +30,19 @@ train_y = y[train_index]
 test_x = x[test_index]
 test_y = y[test_index]
 
-#print(train_x.shape)
-#print(test_x.shape)
+log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
+#  log_reg_model.train()
 
-for i in train_x[0]: print(float(i))
-#dnn = DNN(train_x, train_y, test_x, test_y, 0.01)
-#model = dnn.train()
+print(1-sum(test_y)/len(test_y))
+dnn = DNN(train_x, train_y, test_x, test_y, 0.01)
+model = dnn.train()
 
-'''
-thing = sum(y)/len(y)
-thing_1 = 1 - thing
-print(thing)
-print(thing_1)
-'''
+exit()
 
-#print(test_y)
-#for i in model.predict(test_x): print(round(float(i)))
+print(train_x)
 
-'''
-if __name__ == '__main__':
-    m_type = sys.argv[1]
-    if m_type == 'log_reg':
-        log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
-        log_reg_model.train()
-    elif m_type == 'dnn':
-        dnn = DNN(train_x, train_y, test_x, test_y, 0.001)
-        dnn.train()
-    elif m_type == 'low':
-        low_dnn = LowDNN(train_x, train_y, test_x, test_y)
-        low_dnn.train()
-'''
+predictions = model.predict(train_x)
+i = 0
+while i < len(train_y):
+    print(train_y[i], round(predictions[i][0]*100))
+    i += 1

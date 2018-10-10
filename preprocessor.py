@@ -2,45 +2,44 @@ import csv
 import numpy as np
 import os
 from textblob import TextBlob
+from operator import itemgetter
 
 
 class Preprocessor:
-    def __init__(self, path):
-        """
-        Pre-processes the transcripts into to an array of features that can be inputted to an ML model.
-        :param path: Location of all the transcripts.
-        """
+    def __init__(self, path, transcripts):
         self.path = path
+        self.transcripts = transcripts
 
-    def get_all_transcript_features(self):
-        """
-        Creates the input features array and the expected outputs arrays based on transcripts.
-        :return: Inputs (X) and expected outputs (Y).
-        """
+    def get_all_transcript_features(self, config):
         x = []
         y = []
         expected_dict = self._build_expected_dict()
         liwc_features = self._build_liwc_feature_dict()
-        for file in os.listdir(self.path):
-            name, ext = os.path.splitext(file)
-            if ext != '.csv' or name[4:] != 'TRANSCRIPT' or not name[:3] in expected_dict:
-                continue
-            x.append(self._get_features_for_transcript(file, liwc_features))
-            y.append(int(expected_dict[name[:3]]))
+        for transcript in self.transcripts:
+            if transcript.id in expected_dict:
+                x.append(self._get_features_for_transcript(transcript, liwc_features, config))
+                y.append(int(expected_dict[transcript.id]))
+
+        print('\n\n***\n')
+        print('Total number of examples:', len(y))
+        print('Total number of non-depressed examples:', len(y) - sum(y))
+        print('Total number of depressed examples:', sum(y))
+        print('\n***\n\n')
+
         return np.array(x, dtype='float32'), np.array(y, dtype='int32')
 
     def compile_all_transcripts(self, dest_dir):
-        for file in os.listdir(self.path):
-            name, ext = os.path.splitext(file)
-            if ext != '.csv' or name[4:] != 'TRANSCRIPT':
-                continue
-            self._compile_participant_text(file, dest_dir + '/' + name + '.txt')
+        for transcript in self.transcripts:
+            f = open(dest_dir + '/' + transcript.id + '.txt', "w+")
+            for row in transcript.rows:
+                if row.speaker == 'Participant':
+                    f.write(row.value+'\n')
+            f.close()
 
     def _build_expected_dict(self):
         expected_dict = {}
         for file in [
             'dev_split_Depression_AVEC2017.csv',
-            # 'test_split_Depression_AVEC2017.csv', TODO: Find the test_split details
             'train_split_Depression_AVEC2017.csv'
         ]:
             with open(self.path+'/'+file) as csv_file:
@@ -49,18 +48,18 @@ class Preprocessor:
                     row = row[0].split(',')
                     if row[0] == 'Participant_ID':
                         continue
-                    expected_dict[row[0]] = row[1] == '1'
+                    expected_dict[row[0]] = row[1] != '0'
         return expected_dict
 
-    def _get_features_for_transcript(self, file, liwc_features):
-        """
-        Compiles the features array for a particular transcript.
-        :param file: Name of the transcript.
-        :return: Features array.
-        """
-        name, _ = os.path.splitext(file)
-        features = liwc_features[name]
-        features.append(self._get_sentiment(name))
+    def _get_features_for_transcript(self, transcript, liwc_features, config):
+        if "liwc_indexes" in config:
+            features = np.array(itemgetter(*config["liwc_indexes"])(liwc_features[transcript.id]))
+        else:
+            features = np.array(liwc_features[transcript.id])
+
+        if "sentiment" in config:
+            features = np.append(features, self._get_sentiment(transcript))
+
         # avg_res = self._get_average_response_length(file)
         # features.append(avg_res)
         return features
@@ -74,61 +73,34 @@ class Preprocessor:
                 if row[0] == 'Filename':
                     continue
                 name, _ = os.path.splitext(row[0])
-                features = [float(x) / 100 for x in row[3:83]]
-                liwc_dict[name] = features
+                features = [float(x) / 100 for x in row[3:]]  # ignore the first three items in the csv
+                liwc_dict[name[:3]] = features
         return liwc_dict
 
+    def print_liwc_features(self):
+        with open(self.path+'/liwc_features.csv') as csv_file:
+            reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
+            for row in reader:
+                feature_names = row[0].split(',')[3:]
+                i = 0
+                print('\n\n***\n')
+                for name in feature_names:
+                    print(i, name)
+                    i += 1
+                print('\n***\n\n')
+                return feature_names
+
     @staticmethod
-    def _get_sentiment(name):
-        f = open('./output/split_transcripts/'+name+'.txt', 'r')
-        contents = f.read()
-        t = TextBlob(contents)
+    def _get_sentiment(transcript):
+        participant_responses = ""
+        for row in transcript.rows:
+            if row.speaker == 'Participant':
+                participant_responses += row.value+'\n'
+        t = TextBlob(participant_responses)
         return t.sentiment.polarity
 
     def _get_average_response_length(self, file):
-        """
-        Determines the average continuous response length for the participant in a transcript.
-        :param file: Name of the transcript.
-        :return: The average response length.
-        """
-        parts = 0
-        total = 0
-        with open(self.path+'/'+file) as csv_file:
-            reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
-            length = 0
-            for row in reader:
-                if len(row) < 1:
-                    continue
-                speaker, content = self._extract_transcript_row(row)
-                if speaker == 'Participant':
-                    number_of_words = self._len_without_spaces(content.split(' '))
-                    length += number_of_words
-                else:
-                    if length > 0:
-                        total += length
-                        parts += 1
-                        length = 0
-        if length > 0:
-            total += length
-            parts += 1
-        return total/parts
-
-    def _compile_participant_text(self, file, dest):
-        """
-        Compiles all the participant responses from a transcript.
-        :param file: Name of the transcript.
-        :param dest: The destination file for the compiled text.
-        """
-        f = open(dest, "w+")
-        with open(self.path+'/'+file) as csv_file:
-            reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
-            for row in reader:
-                if len(row) < 1:
-                    continue
-                speaker, content = self._extract_transcript_row(row)
-                if speaker == 'Participant':
-                    f.write(content+'\n')
-        f.close()
+        pass
 
     @staticmethod
     def _len_without_spaces(words):
@@ -137,33 +109,3 @@ class Preprocessor:
             if word != '':
                 counter += 1
         return counter
-
-    @staticmethod
-    def _extract_transcript_row(row):
-        first = row[0].split('\t')
-        speaker = first[2]
-        content = first[len(first)-1]+' '+' '.join(row[1:])
-        return speaker, content
-
-
-class SplitPreprocessor(Preprocessor):
-    def __init__(self, path):
-        Preprocessor.__init__(self, path)
-        self.path = path
-
-    def get_all_transcript_features(self):
-        x = []
-        y = []
-        expected_dict = self._build_expected_dict()
-        liwc_features = self._build_liwc_feature_dict()
-        for file in os.listdir(self.path):
-            name, ext = os.path.splitext(file)
-            if not (ext == '.csv' or ext == '.txt') or name[4:14] != 'TRANSCRIPT' or not name[:3] in expected_dict:
-                continue
-            x.append(self._get_features_for_transcript(file, liwc_features))
-            y.append(int(expected_dict[name[:3]]))
-        return np.array(x, dtype='float32'), np.array(y, dtype='int32')
-
-# p = Preprocessor('./transcripts')
-# x, y = p.get_all_transcript_features()
-# print(x.shape, y.shape)
