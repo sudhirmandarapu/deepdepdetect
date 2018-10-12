@@ -15,9 +15,10 @@ class Preprocessor:
         y = []
         expected_dict = self._build_expected_dict()
         liwc_features = self._build_liwc_feature_dict()
+        lda_features = self._build_lda_features_dict()
         for transcript in self.transcripts:
             if transcript.id in expected_dict:
-                x.append(self._get_features_for_transcript(transcript, liwc_features, config))
+                x.append(self._get_features_for_transcript(transcript, liwc_features, lda_features, config))
                 y.append(int(expected_dict[transcript.id]))
 
         print('\n\n***\n')
@@ -51,15 +52,29 @@ class Preprocessor:
                     expected_dict[row[0]] = row[1] != '0'
         return expected_dict
 
-    def _get_features_for_transcript(self, transcript, liwc_features, config):
-        if "liwc_indexes" in config:
-            features = np.array(itemgetter(*config["liwc_indexes"])(liwc_features[transcript.id]))
-        else:
-            features = np.array(liwc_features[transcript.id])
+    def _build_lda_features_dict(self):
+        lda_dict = {}
+        with open(self.path+'/lda_topics.csv') as csv_file:
+            reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
+            for row in reader:
+                row = row[0].split(',')
+                last_slash = row[1].rfind('/', 0, len(row[1]))
+                lda_dict[row[1][last_slash+1:last_slash+4]] = np.array(row[2:], dtype=float)
+        return lda_dict
+
+    def _get_features_for_transcript(self, transcript, liwc_features, lda_features, config):
+        features = np.array([], dtype=float)
+        if "liwc" in config:
+            if "liwc_indexes" in config:
+                features = np.array(itemgetter(*config["liwc_indexes"])(liwc_features[transcript.id]))
+            else:
+                features = np.array(liwc_features[transcript.id])
 
         if "sentiment" in config:
             features = np.append(features, self._get_sentiment(transcript))
 
+        if "lda" in config:
+            features = np.append(features, lda_features[transcript.id])
         # avg_res = self._get_average_response_length(file)
         # features.append(avg_res)
         return features

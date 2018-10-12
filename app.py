@@ -8,8 +8,10 @@ from models.dnn import DNN, CrossValidationDNN
 transcripts = transcript.get_transcripts_in_path('./transcripts')
 p = Preprocessor('./transcripts', transcripts)
 x, y = p.get_all_transcript_features({
+    "liwc": True,
     "liwc_indexes": list(range(80)),
-    "sentiment": True
+    "sentiment": True,
+    "lda": True
 })
 
 # up sampling
