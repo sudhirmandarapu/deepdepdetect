@@ -3,6 +3,8 @@ import os
 import matplotlib.pyplot as plt
 from preprocessor import Preprocessor
 import numpy as np
+import transcript
+from scipy.stats import ttest_ind
 
 
 def build_expected_dict():
@@ -22,21 +24,23 @@ def build_expected_dict():
 
 
 def get_feature_averages():
-    d = [None]*80
-    nd = [None]*80
+    d = [None]*4
+    nd = [None]*4
     expected_dict = build_expected_dict()
     titles = None
-    with open('./output/split_transcripts/liwc_features.csv') as csv_file:
+    with open('./transcripts/liwc_features.csv') as csv_file:
         reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
         for row in reader:
             split_row = row[0].split(',')
             if split_row[0] == 'Filename':
-                titles = split_row[3:83]
+                titles = split_row[3:]
+                d = [None]*len(titles)
+                nd = [None]*len(titles)
                 continue
             name, _ = os.path.splitext(row[0])
             t_id = name[:3]
             if t_id in expected_dict:
-                for i in range(3, 83):
+                for i in range(3, len(split_row)):
                     if expected_dict[name[:3]]:
                         if d[i-3] is None:
                             d[i-3] = [float(split_row[i])]
@@ -51,7 +55,6 @@ def get_feature_averages():
                 continue
     d_avg = [round(sum(x)/len(x), 4) for x in d]
     nd_avg = [round(sum(x)/len(x), 4) for x in nd]
-
     return np.array(d), np.array(nd), titles
 
 
@@ -95,13 +98,42 @@ def get_sentiments():
     for i in d:
         print(i)
 
-
+'''
 d, nd, titles = get_feature_averages()
-index = 33
-while index < 50:
+index = 0
+while index < len(d):
     fig, ax = plt.subplots()
     ax.boxplot([d[index], nd[index]])
     ax.set_title("Feature scores for "+titles[index]+" ("+str(index)+")")
-    ax.xticks = ([1, 2], ['depressed', 'non depressed'])
+    ax.set_xticks([1, 2])
+    ax.set_xticklabels(['depressed', 'non depressed'])
     index += 1
 plt.show()
+'''
+
+transcripts = transcript.get_transcripts_in_path('./transcripts')
+p = Preprocessor('./transcripts', transcripts, 'train_split_Depression_AVEC2017.csv')
+x, y, titles = p.get_all_transcript_features({
+    "liwc": True,
+    "liwc_indexes": list(range(80)),
+    "sentiment": True,
+    "lda": True,
+    "antidepressants": True,
+    "absolutist": True
+})
+
+# Get indexes of positive examples and negative examples.
+pos = [i for i in range(len(y)) if y[i] == 1]
+neg = [i for i in range(len(y)) if y[i] == 0]
+
+# Get positive and negative features.
+pos_features = x[pos].T
+neg_features = x[neg].T
+
+chosen = 0
+while chosen < pos_features.shape[0]:
+    stat, p = ttest_ind(pos_features[chosen], neg_features[chosen])
+    if p < 0.1:
+        print(titles[chosen])
+        print(round(stat, 5), round(p, 5))
+    chosen += 1
