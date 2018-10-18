@@ -3,16 +3,41 @@ import transcript
 import numpy as np
 from models.log_reg import LogRegModel
 from models.dnn import DNN, CrossValidationDNN
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, chi2, SelectFromModel
+from sklearn.svm import LinearSVC
 
+# 'dev_split_Depression_AVEC2017.csv',
+#    'train_split_Depression_AVEC2017.csv'
 
 transcripts = transcript.get_transcripts_in_path('./transcripts')
-p = Preprocessor('./transcripts', transcripts)
+p = Preprocessor('./transcripts', transcripts, 'train_split_Depression_AVEC2017.csv')
 x, y = p.get_all_transcript_features({
     "liwc": True,
     "liwc_indexes": list(range(80)),
     "sentiment": True,
-    "lda": True
+    "lda": True,
+    "antidepressants": True,
+    "absolutist": True
 })
+
+p_final = Preprocessor('./transcripts', transcripts, 'dev_split_Depression_AVEC2017.csv')
+x_final, y_final = p_final.get_all_transcript_features({
+    "liwc": True,
+    "liwc_indexes": list(range(80)),
+    "sentiment": True,
+    "lda": True,
+    "antidepressants": True,
+    "absolutist": True
+})
+
+# Feature selection.
+#sel = SelectKBest(chi2, k=90)
+#print(x.shape)
+# lsvc = LinearSVC(C=0.5, penalty="l1", dual=False).fit(x, y)
+# model = SelectFromModel(lsvc, prefit=True)
+# x = model.transform(x)
+#x = sel.fit_transform(x, y)
+# print(new_x.shape)A
 
 # up sampling
 i_nd = np.where(y == 0)[0]
@@ -33,10 +58,19 @@ test_x = x[test_index]
 test_y = y[test_index]
 
 # log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
-#  log_reg_model.train()
+# log_reg_model.train()
 
-dnn = DNN(train_x, train_y, test_x, test_y, 0.005)
-model = dnn.train()
+# dnn = DNN(train_x, train_y, test_x, test_y, 0.002)
+# model = dnn.train()
 
-# cv_dnn = CrossValidationDNN(train_x, train_y, test_x, test_y, 0.005, 5)
-# cv_dnn.train_with_cross_validation()
+'''
+predictions = model.predict(x_final)
+corrects = []
+for i in range(len(predictions)):
+    corrects.append(y_final[i] == round(predictions[i][0]))
+
+print(sum(corrects)/len(corrects))
+'''
+
+cv_dnn = CrossValidationDNN(train_x, train_y, test_x, test_y, 0.001, 3)
+cv_dnn.train_with_cross_validation()
