@@ -1,5 +1,6 @@
 absl-py==0.4.1
 astor==0.7.1
+beautifulsoup4==4.6.3
 certifi==2018.8.24
 chardet==3.0.4
 cycler==0.10.0
@@ -17,6 +18,8 @@ pyparsing==2.2.0
 python-dateutil==2.7.3
 pytz==2018.5
 requests==2.19.1
+scikit-learn==0.20.0
+scipy==1.1.0
 six==1.11.0
 tensorboard==1.10.0
 tensorflow==1.10.1
