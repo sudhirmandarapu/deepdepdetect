@@ -43,7 +43,7 @@ class LogRegModel(Model):
         loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=mod, labels=target))
 
         # Other hyper-parameters.
-        learning_rate = 0.001
+        learning_rate = 0.005
         batch_size = 10
         iter_num = 11000
 

@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import re
 
 
 def scrape_antidepressants():
@@ -30,7 +29,7 @@ def scrape_antidepressants():
 
 
 def format_words():
-    file_location = '/Users/SudhirMandarappu/Desktop/repeated.txt'
+    file_location = '/Users/SudhirMandarappu/Desktop/stuff.txt'
     output = '/Users/SudhirMandarappu/Desktop/uniques.txt'
     f = open(file_location, 'r')
     o = open(output, 'w+')
@@ -39,12 +38,16 @@ def format_words():
     uniques = []
     i = 0
     while i < len(contents):
-        word = contents[i].lower()
+        word = contents[i].split(" ")[0]
+        print(word)
         if word not in found:
             uniques.append(word)
-            o.write(word+' 1\n')
+            #o.write(word+' 1\n')
             found[word] = True
         i += 1
+    uniques.sort()
+    for word in uniques:
+        o.write(word+'\n')
     f.close()
     o.close()
 
