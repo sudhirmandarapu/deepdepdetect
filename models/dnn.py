@@ -34,14 +34,14 @@ class DNN(Model):
         model.compile(
             optimizer=tf.train.AdamOptimizer(learning_rate=self.learning_rate),
             loss='binary_crossentropy',
-            metrics=['accuracy', 'mae']
+            metrics=['accuracy', rmse, 'mae']
         )
 
         history = model.fit(
             train_x,
             train_y,
             batch_size=10,
-            epochs=160,
+            epochs=30,
             validation_data=(test_x, test_y),
             verbose=1
         )
@@ -66,12 +66,14 @@ class DNN(Model):
 
 
 class CrossValidationDNN(Model):
-    def __init__(self, train_x, train_y, test_x, test_y, learning_rate, folds):
+    def __init__(self, train_x, train_y, test_x, test_y, final_x, final_y, learning_rate, folds):
         Model.__init__(self)
         self.train_x = train_x
         self.train_y = train_y
         self.test_x = test_x
         self.test_y = test_y
+        self.final_x = final_x
+        self.final_y = final_y
         self.learning_rate = learning_rate
         self.folds = folds
         self.model = None
@@ -87,7 +89,7 @@ class CrossValidationDNN(Model):
         model.compile(
             optimizer=tf.train.AdamOptimizer(learning_rate=self.learning_rate),
             loss='binary_crossentropy',
-            metrics=['accuracy', rmse]
+            metrics=['accuracy', rmse, 'mae']
         )
         self.model = model
 
