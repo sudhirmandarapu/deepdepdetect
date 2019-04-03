@@ -12,7 +12,7 @@ I am not allowed to release the dataset that was used for the project, and the c
 
 ```
 
-https://github.com/sudhirmandarapu/deepdepdetect
+git clone https://github.com/sudhirmandarapu/deepdepdetect
 
 ```
 
