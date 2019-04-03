@@ -1,6 +1,6 @@
 # deepdepdetect
 
-This repo includes the code used as part of my final year Software Engineering honours thesis on detecting symptoms of depression in clinical interview transcripts. The study was centered around the DAIC-WOZ depression dataset of transcripts and audio recordings from 189 clinical interviews with depressed and non-depressed individuals. I have included my full thesis in this repo.
+This repo includes the code used as part of my final year Software Engineering honours thesis on detecting symptoms of depression in clinical interview transcripts using deep neural networks. The study was centered around the DAIC-WOZ depression dataset of transcripts and audio recordings from 189 clinical interviews with depressed and non-depressed individuals. I have included my full thesis in this repo.
 
 ## Setting Up
 
