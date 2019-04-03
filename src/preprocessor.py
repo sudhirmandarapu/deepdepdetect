@@ -72,10 +72,6 @@ class Preprocessor:
 
     def _build_expected_dict(self):
         expected_dict = {}
-        #for file in [
-            # 'dev_split_Depression_AVEC2017.csv',
-        #    'train_split_Depression_AVEC2017.csv'
-        #]:
         with open(self.path+'/'+self.expected_file) as csv_file:
             reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
             for row in reader:

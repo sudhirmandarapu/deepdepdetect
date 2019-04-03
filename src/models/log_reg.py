@@ -72,7 +72,7 @@ class LogRegModel(Model):
             temp_train_acc = sess.run(accuracy, feed_dict={data: train_x, target: np.matrix(self.train_y).T})
             temp_test_acc = sess.run(accuracy, feed_dict={data: test_x, target: np.matrix(self.test_y).T})
 
-            # Recode the result. TODO: Understand this part.
+            # Recode the result.
             loss_trace.append(temp_loss)
             train_acc.append(temp_train_acc)
             test_acc.append(temp_test_acc)

@@ -1,3 +1,4 @@
+import os
 from preprocessor import Preprocessor
 import transcript
 import numpy as np
@@ -6,38 +7,34 @@ from models.dnn import DNN, CrossValidationDNN, rmse
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, chi2, SelectFromModel
 from sklearn.svm import LinearSVC
 
-# 'dev_split_Depression_AVEC2017.csv',
-#    'train_split_Depression_AVEC2017.csv'
 
 transcripts = transcript.get_transcripts_in_path('./transcripts')
-p = Preprocessor('./transcripts', transcripts, 'train_split_Depression_AVEC2017.csv')
+p = Preprocessor('./transcripts', transcripts, os.getenv('TRAINING_DATA_FILE'))
 x, y, titles = p.get_all_transcript_features({
-    # "liwc": True,
-    # "liwc_indexes": list(range(80)),
-    # "sentiment": True,
+    "liwc": True,
+    "liwc_indexes": list(range(80)),
+    "sentiment": True,
     "lda": True,
-    # "antidepressants": True,
-    # "absolutist": True
+    "antidepressants": True,
+    "absolutist": True
 })
 
-p_final = Preprocessor('./transcripts', transcripts, 'dev_split_Depression_AVEC2017.csv')
+p_final = Preprocessor('./transcripts', transcripts, os.getenv('DEV_DATA_FILE'))
 x_final, y_final, titles = p_final.get_all_transcript_features({
-    # "liwc": True,
-    # "liwc_indexes": list(range(80)),
-    # "sentiment": True,
+    "liwc": True,
+    "liwc_indexes": list(range(80)),
+    "sentiment": True,
     "lda": True,
-    # "antidepressants": True,
-    # "absolutist": True
+    "antidepressants": True,
+    "absolutist": True
 })
 
 # Feature selection.
-#sel = SelectKBest(chi2, k=90)
-#print(x.shape)
+# sel = SelectKBest(chi2, k=90)
 # lsvc = LinearSVC(C=0.5, penalty="l1", dual=False).fit(x, y)
 # model = SelectFromModel(lsvc, prefit=True)
 # x = model.transform(x)
-#x = sel.fit_transform(x, y)
-# print(new_x.shape)A
+# x = sel.fit_transform(x, y)
 
 
 seed = 5
@@ -58,18 +55,16 @@ i_d_upsampled = np.random.choice(i_d, size=len(i_nd), replace=True)
 train_y = np.concatenate((train_y[i_d_upsampled], train_y[i_nd]))
 train_x = np.concatenate((train_x[i_d_upsampled], train_x[i_nd]))
 
-# log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
-# log_reg_model.train()
-
-dnn = DNN(train_x, train_y, test_x, test_y, 0.001)
-model = dnn.train()
+model_to_use = os.getenv('MODEL')
+if model_to_use == 'LOGREG':
+    log_reg_model = LogRegModel(train_x, train_y, test_x, test_y)
+    model = log_reg_model.train()
+elif model_to_use == os.getenv('DNN'):
+    dnn = DNN(train_x, train_y, test_x, test_y, 0.001)
+    model = dnn.train()
+else:
+    cv_dnn = CrossValidationDNN(train_x, train_y, test_x, test_y, x_final, y_final, 0.001, 3)
+    model = cv_dnn.train_with_cross_validation()
 
 print(model.metrics_names)
 print(model.test_on_batch(x_final, y_final))
-
-#rint("test accuracy:", sum(corrects)/len(corrects))
-#print("rmse: ", rmse(y_final, predictions))
-
-# cv_dnn = CrossValidationDNN(train_x, train_y, test_x, test_y, x_final, y_final, 0.001, 3)
-# cv_dnn.train_with_cross_validation()
-

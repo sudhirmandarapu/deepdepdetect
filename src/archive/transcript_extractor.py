@@ -19,6 +19,6 @@ def extract(src_dir, dest_dir):
     print('failed for: '+str(fails))
 
 
-src = '/Volumes/Toshiba/DAIC Dataset'
+src = os.getenv('DATA_SOURCE_DIR')
 dest = './transcripts'
 extract(src, dest)

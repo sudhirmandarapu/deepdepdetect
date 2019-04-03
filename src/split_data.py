@@ -1,9 +1,11 @@
-from preprocessor import Preprocessor
 import os
+from preprocessor import Preprocessor
+import transcript
 
 path = './transcripts'
 new_labels_file = ''
-p = Preprocessor(path)
+transcripts = transcript.get_transcripts_in_path(path)
+p = Preprocessor(path, transcripts, os.getenv('TRAINING_DATA_FILE'))
 
 
 def split_even(input_dir, file, output):
@@ -23,6 +25,7 @@ def split_transcripts(output, temp_dir, expected_dir):
         if ext != '.txt' or name[4:] != 'TRANSCRIPT' or not name[:3] in expected_dict:
             continue
         split_even(temp_dir, file, output)
+
 
 expected_dict = p._build_expected_dict()
 split_transcripts('./output/split_transcripts', './split_transcripts_temp', expected_dict)
